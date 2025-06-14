@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('redeemDatabase', JSON.stringify(initialData));
             return initialData;
         }
-        return getDatabase();
+        return JSON.parse(localStorage.getItem('redeemDatabase'));
     }
     
     // Load and display history
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check code validity and availability
     function checkCode() {
         const code = redeemCodeInput.value.trim().toUpperCase();
-        const db = getDatabase();
+        const db = initializeDatabase();
         
         // Sembunyikan semua alert terlebih dahulu
         usedCodeAlert.style.display = 'none';
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Redeem code logic
     function redeemCode(code) {
-        const db = getDatabase();
+        const db = initializeDatabase();
         
         // Validate code again (just to be sure)
         if (!VALID_CODES.includes(code.toUpperCase())) {
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
             db.stats.wins++;
         }
         
-        updateDatabase(db);
+        localStorage.setItem('redeemDatabase', JSON.stringify(db));
         
         // Return result
         if (selectedPrize !== 'Zonk') {
@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update history list
     function updateHistory() {
-        const db = getDatabase();
+        const db = initializeDatabase();
         historyList.innerHTML = '';
         
         if (!db.logs || db.logs.length === 0) {
@@ -304,14 +304,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update statistics
     function updateStats() {
-        const db = getDatabase();
+        const db = initializeDatabase();
         if (!db.stats) {
             db.stats = {
                 total: 0,
                 wins: 0,
                 loses: 0
             };
-            updateDatabase(db);
+            localStorage.setItem('redeemDatabase', JSON.stringify(db));
         }
         totalRedeemsDisplay.textContent = db.stats.total || 0;
         winCountDisplay.textContent = db.stats.wins || 0;
@@ -360,15 +360,5 @@ document.addEventListener('DOMContentLoaded', function() {
                 confetti.remove();
             }, animationDuration * 1000);
         }
-    }
-    
-    // Database helper functions
-    function getDatabase() {
-        const db = localStorage.getItem('redeemDatabase');
-        return db ? JSON.parse(db) : initializeDatabase();
-    }
-    
-    function updateDatabase(newData) {
-        localStorage.setItem('redeemDatabase', JSON.stringify(newData));
     }
 });
