@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Redeem Code - Branpedia</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --light-gray: #ecf0f1;
+            --dark-gray: #7f8c8d;
+            --text-color: #2c3e50;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        .container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            transition: var(--transition);
+            margin: 20px 0;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .redeem-form {
+            margin: 25px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+        }
+
+        #redeemCode {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        #redeemCode:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        #redeemBtn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        #redeemBtn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        #redeemBtn:disabled {
+            background-color: var(--dark-gray);
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        .result-container {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            display: none;
+            animation: fadeIn 0.5s ease;
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .win {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #155724;
+            border: 1px solid rgba(46, 204, 113, 0.5);
+        }
+
+        .lose {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #721c24;
+            border: 1px solid rgba(231, 76, 60, 0.5);
+        }
+
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary-color);
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+            width: 100%;
+        }
+
+        .alert-warning {
+            background-color: rgba(243, 156, 18, 0.2);
+            color: #856404;
+            border: 1px solid rgba(243, 156, 18, 0.5);
+        }
+
+        .alert-info {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: #0c5460;
+            border: 1px solid rgba(52, 152, 219, 0.5);
+        }
+
+        .alert-danger {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #721c24;
+            border: 1px solid rgba(231, 76, 60, 0.5);
+        }
+
+        .history-panel {
+            margin-top: 30px;
+            text-align: left;
+            background-color: var(--light-gray);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            max-height: 200px;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .history-panel h3 {
+            margin-top: 0;
+            color: var(--text-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .history-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .prize-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .prize-success {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #155724;
+        }
+
+        .prize-danger {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #721c24;
+        }
+
+        .timer {
+            font-size: 14px;
+            color: var(--dark-gray);
+            margin-top: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            text-align: center;
+            width: 100%;
+        }
+
+        .stat-item {
+            flex: 1;
+            padding: 10px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--dark-gray);
+            text-transform: uppercase;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .info-panel {
+            margin-top: 20px;
+            text-align: left;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius);
+        }
+
+        .info-panel h3 {
+            margin-top: 0;
+        }
+
+        .info-panel ul {
+            padding-left: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .stat-value {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎁 Redeem Code Branpedia</h1>
+        <p>Masukkan kode redeem Anda untuk kesempatan memenangkan hadiah eksklusif!</p>
+        
+        <div id="usedCodeAlert" class="alert alert-warning">
+            Kode ini sudah digunakan sebelumnya dan tidak dapat digunakan lagi.
+        </div>
+        
+        <div id="infoAlert" class="alert alert-info">
+            Kode valid! Klik tombol Redeem untuk mencoba keberuntungan Anda.
+        </div>
+        
+        <div id="invalidCodeAlert" class="alert alert-danger">
+            Kode tidak valid! Masukkan kode yang benar.
+        </div>
+        
+        <div class="redeem-form">
+            <input type="text" id="redeemCode" placeholder="Masukkan kode redeem (contoh: BRANPEDIA)" autocomplete="off">
+            <button id="redeemBtn">Redeem Sekarang</button>
+            <div class="timer" id="timer">Waktu redeem: <span id="time">00:00</span></div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalRedeems">0</div>
+                <div class="stat-label">Total Redeem</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="winCount">0</div>
+                <div class="stat-label">Menang</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="loseCount">0</div>
+                <div class="stat-label">Zonk</div>
+            </div>
+        </div>
+        
+        <div id="result" class="result-container"></div>
+        
+        <div class="history-panel">
+            <h3>
+                <span>Riwayat Redeem</span>
+                <span class="tooltip">ℹ️
+                    <span class="tooltiptext">Daftar semua kode yang sudah Anda redeem beserta hasilnya</span>
+                </span>
+            </h3>
+            <ul id="historyList" class="history-list">
+                <li>Belum ada riwayat redeem</li>
+            </ul>
+        </div>
+        
+        <div class="info-panel">
+            <h3>📢 Informasi Hadiah</h3>
+            <ul>
+                <li><strong>Paket Internet 10GB</strong> (10% chance)</li>
+                <li><strong>Pulsa 50.000</strong> (10% chance)</li>
+                <li><strong>Voucher Netflix 1 Bulan</strong> (10% chance)</li>
+                <li><strong>Voucher Spotify Premium</strong> (10% chance)</li>
+                <li><strong>Zonk</strong> (60% chance)</li>
+            </ul>
+            <p><strong>⚠️ Perhatian:</strong> Setiap kode hanya bisa digunakan sekali saja!</p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Daftar kode redeem yang valid
+            const VALID_CODES = [
+                "BRANPEDIA", 
+                "BRANPEDIA10", 
+                "BRAN2023",
+                "BRAN123",
+                "BRANPEDIAVIP"
+            ];
+            
+            // Probabilitas hadiah yang lebih fair
+            const PRIZES = [
+                {name: 'Paket Internet 10GB', probability: 0.1},  // 10%
+                {name: 'Pulsa 50.000', probability: 0.1},        // 10%
+                {name: 'Voucher Netflix 1 Bulan', probability: 0.1}, // 10%
+                {name: 'Voucher Spotify Premium', probability: 0.1}, // 10%
+                {name: 'Zonk', probability: 0.6}                   // 60%
+            ];
+            
+            // DOM Elements
+            const redeemBtn = document.getElementById('redeemBtn');
+            const redeemCodeInput = document.getElementById('redeemCode');
+            const resultDiv = document.getElementById('result');
+            const usedCodeAlert = document.getElementById('usedCodeAlert');
+            const infoAlert = document.getElementById('infoAlert');
+            const invalidCodeAlert = document.getElementById('invalidCodeAlert');
+            const historyList = document.getElementById('historyList');
+            const timeDisplay = document.getElementById('time');
+            const totalRedeemsDisplay = document.getElementById('totalRedeems');
+            const winCountDisplay = document.getElementById('winCount');
+            const loseCountDisplay = document.getElementById('loseCount');
+            
+            // Sistem random yang lebih fair
+            let prizePool = [];
+            let currentPool = [];
+            
+            // Inisialisasi pool hadiah
+            function initializePrizePool() {
+                prizePool = [];
+                // Isi pool dengan hadiah sesuai probabilitas
+                PRIZES.forEach(prize => {
+                    const count = Math.floor(prize.probability * 100);
+                    for (let i = 0; i < count; i++) {
+                        prizePool.push(prize.name);
+                    }
+                });
+                
+                // Acak isi pool
+                prizePool = shuffleArray(prizePool);
+                currentPool = [...prizePool]; // Salin pool untuk digunakan
+            }
+            
+            // Fungsi untuk mengacak array
+            function shuffleArray(array) {
+                const newArray = [...array];
+                for (let i = newArray.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                }
+                return newArray;
+            }
+            
+            // Dapatkan hadiah dari pool
+            function getPrizeFromPool() {
+                if (currentPool.length === 0) {
+                    initializePrizePool(); // Reset pool jika habis
+                }
+                
+                // Ambil hadiah dari pool
+                const prize = currentPool.pop();
+                return prize;
+            }
+            
+            // Initialize database in localStorage
+            function initializeDatabase() {
+                if (!localStorage.getItem('redeemDatabase')) {
+                    const initialData = {
+                        logs: [],
+                        usedCodes: [],
+                        stats: {
+                            total: 0,
+                            wins: 0,
+                            loses: 0
+                        }
+                    };
+                    localStorage.setItem('redeemDatabase', JSON.stringify(initialData));
+                    return initialData;
+                }
+                return getDatabase();
+            }
+            
+            // Load and display history
+            initializeDatabase();
+            initializePrizePool();
+            updateHistory();
+            updateStats();
+            startTimer();
+            
+            // Event listeners
+            redeemCodeInput.addEventListener('input', checkCode);
+            redeemBtn.addEventListener('click', processRedeem);
+            
+            // Check code validity and availability
+            function checkCode() {
+                const code = redeemCodeInput.value.trim().toUpperCase();
+                const db = getDatabase();
+                
+                // Sembunyikan semua alert terlebih dahulu
+                usedCodeAlert.style.display = 'none';
+                infoAlert.style.display = 'none';
+                invalidCodeAlert.style.display = 'none';
+                
+                if (code.length === 0) {
+                    redeemBtn.disabled = true;
+                    return;
+                }
+                
+                // Cek apakah kode termasuk dalam daftar valid
+                const isValidCode = VALID_CODES.includes(code);
+                
+                // Cek apakah kode sudah digunakan sebelumnya
+                const isUsed = db.usedCodes && db.usedCodes.some(usedCode => 
+                    usedCode.toUpperCase() === code
+                );
+                
+                if (isUsed) {
+                    usedCodeAlert.style.display = 'block';
+                    redeemBtn.disabled = true;
+                } else if (isValidCode) {
+                    infoAlert.style.display = 'block';
+                    redeemBtn.disabled = false;
+                } else {
+                    // Jika kode tidak valid
+                    invalidCodeAlert.style.display = 'block';
+                    redeemBtn.disabled = true;
+                }
+            }
+            
+            // Process redeem
+            function processRedeem() {
+                const code = redeemCodeInput.value.trim().toUpperCase();
+                if (!code) return;
+                
+                // Validasi lagi sebelum proses
+                if (!VALID_CODES.includes(code)) {
+                    invalidCodeAlert.style.display = 'block';
+                    return;
+                }
+                
+                // UI changes
+                redeemBtn.disabled = true;
+                redeemBtn.innerHTML = 'Memproses <span class="spinner"></span>';
+                resultDiv.style.display = 'none';
+                usedCodeAlert.style.display = 'none';
+                infoAlert.style.display = 'none';
+                invalidCodeAlert.style.display = 'none';
+                
+                // Simulate API call
+                setTimeout(() => {
+                    const result = redeemCode(code);
+                    
+                    // Display result
+                    displayResult(result, code);
+                    
+                    // Update UI
+                    updateHistory();
+                    updateStats();
+                    redeemCodeInput.value = '';
+                    redeemBtn.disabled = false;
+                    redeemBtn.textContent = 'Redeem Sekarang';
+                    checkCode();
+                }, 1500);
+            }
+            
+            // Redeem code logic
+            function redeemCode(code) {
+                const db = getDatabase();
+                
+                // Validate code again (just to be sure)
+                if (!VALID_CODES.includes(code.toUpperCase())) {
+                    return {
+                        success: false,
+                        message: 'Kode tidak valid',
+                        prize: null
+                    };
+                }
+                
+                // Check if code already used (case insensitive)
+                if (db.usedCodes && db.usedCodes.some(c => c.toUpperCase() === code.toUpperCase())) {
+                    return {
+                        success: false,
+                        message: 'Kode sudah digunakan',
+                        prize: null
+                    };
+                }
+                
+                // Dapatkan hadiah dari pool yang sudah diacak
+                const selectedPrize = getPrizeFromPool();
+                
+                // Initialize arrays if they don't exist
+                if (!db.logs) db.logs = [];
+                if (!db.usedCodes) db.usedCodes = [];
+                if (!db.stats) {
+                    db.stats = {
+                        total: 0,
+                        wins: 0,
+                        loses: 0
+                    };
+                }
+                
+                // Save to database
+                const log = {
+                    id: db.logs.length + 1,
+                    code: code,
+                    prize: selectedPrize,
+                    redeemed_at: new Date().toISOString(),
+                    timestamp: Date.now()
+                };
+                
+                db.logs.unshift(log);
+                db.usedCodes.push(code);
+                
+                // Update stats
+                db.stats.total++;
+                if (selectedPrize === 'Zonk') {
+                    db.stats.loses++;
+                } else {
+                    db.stats.wins++;
+                }
+                
+                updateDatabase(db);
+                
+                // Return result
+                if (selectedPrize !== 'Zonk') {
+                    createConfetti();
+                    return {
+                        success: true,
+                        prize: selectedPrize,
+                        message: 'Selamat! Anda memenangkan hadiah!'
+                    };
+                } else {
+                    return {
+                        success: false,
+                        prize: 'Zonk',
+                        message: 'Maaf, Anda belum beruntung.'
+                    };
+                }
+            }
+            
+            // Display result
+            function displayResult(result, code) {
+                resultDiv.style.display = 'block';
+                
+                if (result.success) {
+                    resultDiv.className = 'result-container win';
+                    resultDiv.innerHTML = `
+                        <h2>🎉 Selamat!</h2>
+                        <p>Anda mendapatkan: <strong>${result.prize}</strong></p>
+                        <p>Kode: <code>${code}</code></p>
+                        <p>Hadiah akan dikirim ke email Anda dalam 1x24 jam.</p>
+                        <p><small>Waktu redeem: ${new Date().toLocaleString()}</small></p>
+                    `;
+                } else {
+                    resultDiv.className = 'result-container lose';
+                    resultDiv.innerHTML = `
+                        <h2>😢 ${result.prize ? 'Zonk!' : 'Error'}</h2>
+                        <p>${result.message}</p>
+                        ${code ? `<p>Kode: <code>${code}</code></p>` : ''}
+                        <p><small>Waktu redeem: ${new Date().toLocaleString()}</small></p>
+                    `;
+                }
+            }
+            
+            // Update history list
+            function updateHistory() {
+                const db = getDatabase();
+                historyList.innerHTML = '';
+                
+                if (!db.logs || db.logs.length === 0) {
+                    historyList.innerHTML = '<li>Belum ada riwayat redeem</li>';
+                    return;
+                }
+                
+                db.logs.slice(0, 5).forEach(log => {
+                    const li = document.createElement('li');
+                    li.className = 'history-item';
+                    
+                    const isWin = log.prize !== 'Zonk';
+                    const prizeClass = isWin ? 'prize-success' : 'prize-danger';
+                    
+                    li.innerHTML = `
+                        <span>
+                            <strong>${log.code}</strong>
+                            <small>(${new Date(log.redeemed_at).toLocaleTimeString()})</small>
+                        </span>
+                        <span class="prize-badge ${prizeClass}">${log.prize}</span>
+                    `;
+                    
+                    historyList.appendChild(li);
+                });
+            }
+            
+            // Update statistics
+            function updateStats() {
+                const db = getDatabase();
+                if (!db.stats) {
+                    db.stats = {
+                        total: 0,
+                        wins: 0,
+                        loses: 0
+                    };
+                    updateDatabase(db);
+                }
+                totalRedeemsDisplay.textContent = db.stats.total || 0;
+                winCountDisplay.textContent = db.stats.wins || 0;
+                loseCountDisplay.textContent = db.stats.loses || 0;
+            }
+            
+            // Timer functions
+            function startTimer() {
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+            
+            function updateTimer() {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                timeDisplay.textContent = `${minutes}:${seconds}`;
+            }
+            
+            // Confetti effect
+            function createConfetti() {
+                const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+                
+                for (let i = 0; i < 100; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.left = `${Math.random() * 100}vw`;
+                    confetti.style.top = '-10px';
+                    confetti.style.width = `${Math.random() * 10 + 5}px`;
+                    confetti.style.height = `${Math.random() * 10 + 5}px`;
+                    
+                    document.body.appendChild(confetti);
+                    
+                    const animationDuration = Math.random() * 3 + 2;
+                    
+                    confetti.animate([
+                        { top: '-10px', opacity: 1, transform: 'rotate(0deg)' },
+                        { top: '100vh', opacity: 0, transform: 'rotate(360deg)' }
+                    ], {
+                        duration: animationDuration * 1000,
+                        easing: 'cubic-bezier(0.1, 0.8, 0.9, 1)'
+                    });
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, animationDuration * 1000);
+                }
+            }
+            
+            // Database helper functions
+            function getDatabase() {
+                const db = localStorage.getItem('redeemDatabase');
+                return db ? JSON.parse(db) : initializeDatabase();
+            }
+            
+            function updateDatabase(newData) {
+                localStorage.setItem('redeemDatabase', JSON.stringify(newData));
+            }
+        });
+    </script>
+</body>
+</html>
